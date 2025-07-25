@@ -38,8 +38,11 @@ npm run build
 # 5. Generate application key
 php artisan key:generate
 
-# 6. run the project
+# 6.a. run the project
 php artisan serve
 npm run dev
+
+# 6.b. run the project
+composer run dev
 
 ```
