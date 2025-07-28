@@ -39,15 +39,35 @@
                 </tr>
             </thead>
             <tbody>
-                <tr class="border-b border-gray-300">
-                    <td class="px-4 py-2"></td>
-                    <td class="px-4 py-2"></td>
-                    <td class="px-4 py-2"></td>
-                    <td class="px-4 py-2"></td>
-                    <td class="px-4 py-2"></td>
-                    <td class="px-4 py-2"></td>
-                    <td class="px-4 py-2"></td>
-                </tr>
+                @forelse ($products as $product)
+                    <tr class="border-b border-gray-300">
+                        <td class="px-4 py-2">{{ $product->index + 1 }}</td>
+                        <td class="px-4 py-2">{{ $product->name }}</td>
+                        <td class="px-4 py-2">{{ $product->sku }}</td>
+                        <td class="px-4 py-2">{{ number_format($product->price) }}</td>
+                        <td class="px-4 py-2 capitalize">{{ $product->status }}</td>
+                        <td class="px-4 py-2">
+                            @if ($product->productImages->count())
+                                <img src="{{ asset('storage/' . $product->productImages[0]->featured_image) }}" alt="image" class="w-30 h-18 object-cover rounded">
+                            @endif
+                        </td>
+                        <td class="px-4 py-2 space-x-2">
+                            <button title="View" class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                            <button title="View" class="cursor-pointer bg-green-500 hover:bg-green-600 text-white p-2 rounded transition">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </button>
+                            <button title="View" class="cursor-pointer bg-red-500 hover:bg-red-600 text-white p-2 rounded transition">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </td>
+                    </tr>
+                @empty
+                    <tr class="border-b border-gray-300">
+                        <td colspan="7" class="px-4 py-2">No Products Found.</td>
+                    </tr>
+                @endforelse
             </tbody>
         </table>
     </div>
