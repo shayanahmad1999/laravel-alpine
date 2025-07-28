@@ -41,25 +41,34 @@ class ProductController extends Controller
             'images.*' => 'image|max:5120', 
         ]);
 
-        $product = Product::create([
-            'name'=> $request->name,
-            'slug' => Str::slug($request->name),
-            'description'=> $request->description,
-            'price'=> $request->price,
-            'sku' => $this->generateSku(),
-            'status'=> $request->status,
-        ]);
+        DB::beginTransaction();
+        try {
 
-        if($request->hasFile('images')){
-            foreach($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $product->productImages()->create([
-                    'featured_image' => $path
-                ]);
+            $product = Product::create([
+                'name'=> $request->name,
+                'slug' => Str::slug($request->name),
+                'description'=> $request->description,
+                'price'=> $request->price,
+                'sku' => $this->generateSku(),
+                'status'=> $request->status,
+            ]);
+
+            if($request->hasFile('images')){
+                foreach($request->file('images') as $image) {
+                    $path = $image->store('products', 'public');
+                    $product->productImages()->create([
+                        'featured_image' => $path
+                    ]);
+                }
             }
-        }
 
-        return redirect()->back()->with('success',  'Product saved successfuly');
+            DB::commit();
+            return redirect()->back()->with('success', 'Product saved successfully');
+        
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -97,37 +106,47 @@ class ProductController extends Controller
     {
         $existingImages = $request->input('existing_images', []);
         $hasExistingImages = count($existingImages) > 0;
-        $hasnNewImages = $request->hasFile('images');
+        $hasNewImages = $request->hasFile('images');
 
         $request->validate([
             'name' => 'required|string|max:255',
             'price' => 'required|numeric',
             'status' => 'required|in:active,inactive',
             'description' => 'required|string', 
-            'images' => [$hasExistingImages || $hasnNewImages ? 'nullable' : 'required', 'array'], 
+            'images' => [$hasExistingImages || $hasNewImages ? 'nullable' : 'required', 'array'], 
             'images.*' => 'image|max:5120', 
         ]);
 
-        $product->update($request->only([
-            'name','price','status','description',
-        ]));
+        DB::beginTransaction();
 
-        $product->productImages()->whereNotIn('featured_image', $existingImages)->get()
-        ->each(function($image){
-            Storage::disk('public')->delete($image->featured_image);
-            $image->delete();
-        });
+        try {
 
-        if($hasnNewImages){
-            foreach($request->file('images') as $image) {
-                $path = $image->store('products', 'public');
-                $product->productImages()->create([
-                    'featured_image' => $path
-                ]);
+            $product->update($request->only([
+                'name','price','status','description',
+            ]));
+
+            $product->productImages()->whereNotIn('featured_image', $existingImages)->get()
+            ->each(function($image){
+                Storage::disk('public')->delete($image->featured_image);
+                $image->delete();
+            });
+
+            if($hasNewImages){
+                foreach($request->file('images') as $image) {
+                    $path = $image->store('products', 'public');
+                    $product->productImages()->create([
+                        'featured_image' => $path
+                    ]);
+                }
             }
-        }
 
-        return redirect()->back()->with('success',  'Product updated successfuly');
+            DB::commit();
+            return redirect()->back()->with('success', 'Product updated successfully');
+
+        } catch (\Exception $e) {
+        DB::rollBack();
+        return redirect()->back()->with('error', 'Something went wrong: ' . $e->getMessage());
+    }
     }
 
     /**
