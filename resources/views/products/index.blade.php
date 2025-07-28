@@ -2,7 +2,7 @@
  @section('title', content: 'Products')
 @section('content')
 
-<div x-data="productManager()" class="py-4">
+<div x-data="productManager()" x-init="init()" class="py-4">
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Product List</h1>
 
@@ -52,6 +52,16 @@
         </table>
     </div>
     @include('products.partials.product-modal')
+
+    @if ($errors->any())
+        <script>
+            document.addEventListener('alpine:init', () => {
+                Alpine.store('productStore', {
+                    isModalOpen: true,
+                });
+            });
+        </script>
+    @endif
 </div>
 
 @endsection
@@ -66,6 +76,15 @@
                 form: productManager.defaultForm(),
                 imagePreviews: [],
                 errors: [],
+
+                init() {
+                    if (Alpine.store('productStore')?.isModalOpen) {
+                        this.mode = 'create';
+                        this.modalTitle = 'Create Product';
+                        this.openModal();
+                        Alpine.store('productStore').isModalOpen = false;
+                    }
+                },
 
                 openModal(type) {
                     this.isModalOpen = true;

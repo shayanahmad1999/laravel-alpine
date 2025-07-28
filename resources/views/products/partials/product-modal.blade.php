@@ -1,15 +1,28 @@
 <div x-show="isModalOpen" class="fixed inset-0 bg-black bg-opicity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl p-8">
         <h2 class="text-2xl font-bold mb-6">Create Product</h2>
-        <form>
+        <form :action="mode === 'edit' ? `/products/${form.id}` :  '{{ route('products.store') }}'" method="POST" enctype="multipart/form-data">
+
+            @csrf
+
+            <template x-if="mode === 'edit'">
+                <input type="hiddeen" name="_method" value="PUT">
+            </template>
+
         <div class="mb-5">
             <label for="name" class="block mb-2 text-sm font-medium">NAME</label>
-            <input type="text" id="name" class="w-full shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Watch..." required />
+            <input type="text" id="name" class="w-full shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Watch..." />
+            @error('name')
+                <p class="text-red-500 text-sm">{{$message}}</p>
+            @enderror
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             <div class="mb-5">
                 <label for="price" class="block mb-2 text-sm font-medium">PRICE</label>
-                <input type="number" id="price" step="0.1" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="10.00" required />
+                <input type="number" id="price" step="0.1" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="10.00" />
+                @error('price')
+                    <p class="text-red-500 text-sm">{{$message}}</p>
+                @enderror
             </div>
             <div class="mb-5">
                 <label for="status" class="block mb-2 text-sm font-medium text-gray-900">STATUS</label>
@@ -18,11 +31,17 @@
                     <option value="active">ACTIVE</option>
                     <option value="inactive">IN-ACTIVE</option>
                 </select>
+                @error('status')
+                    <p class="text-red-500 text-sm">{{$message}}</p>
+                @enderror
             </div>
         </div>
         <div class="mb-5">
             <label for="description" class="block mb-2 text-sm font-medium">DESCRIPTION</label>
-            <textarea id="description" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required placeholder="Description..."></textarea>
+            <textarea id="description" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Description..."></textarea>
+            @error('description')
+                <p class="text-red-500 text-sm">{{$message}}</p>
+            @enderror
         </div>
         <div class="mb-5">
             <label for="featured-image" class="block mb-2 text-sm font-medium">FEATURED IMAGES</label>
@@ -36,6 +55,10 @@
                 <p class="text-xs text-gray-500 mt-1.5">you can select multiple images.</p>
             </div>
         </div>
+
+        @error('images')
+                <p class="text-red-500 text-sm">{{$message}}</p>
+        @enderror
 
         <div class="text-red-600 text-sm space-y-1">
             <template x-for="(error, index) in errors" :key="index">
