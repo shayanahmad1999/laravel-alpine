@@ -25,11 +25,11 @@ class ProductController extends Controller
         }
 
         if ($request->filled('price')) {
-            $query->where('price', 'LIKE', '%' . $request->price . '%');
+            $query->where('price', $request->price);
         }
 
         if ($request->filled('sku')) {
-            $query->where('sku', 'LIKE', '%' . $request->sku . '%');
+            $query->where('sku',$request->sku);
         }
 
         $products = $query->latest()->paginate(5);
