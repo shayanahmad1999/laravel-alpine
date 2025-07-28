@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
@@ -132,8 +133,25 @@ class ProductController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(Product $product)
     {
-        //
+        $existingImages = $existingImages ?? [];
+
+        if (!$product->exists) {
+            return redirect()->back()->with('error', 'Invalid product');
+        }
+
+        DB::transaction(function () use ($product, $existingImages) {
+            $product->productImages()
+                    ->whereNotIn('featured_image', $existingImages)
+                    ->each(function ($image) {
+                        Storage::disk('public')->delete($image->featured_image);
+                        $image->delete();
+                    });
+
+            $product->delete();
+        });
+
+        return redirect()->back()->with('success', 'Product deleted successfully');
     }
 }
