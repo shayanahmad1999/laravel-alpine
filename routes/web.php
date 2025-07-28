@@ -8,3 +8,4 @@ Route::get('/', function () {
 });
 
 Route::resource('products', ProductController::class); 
+Route::put('/products/{product}/status', [ProductController::class, 'updateStatus']);

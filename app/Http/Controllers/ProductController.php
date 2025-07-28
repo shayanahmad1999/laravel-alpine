@@ -174,4 +174,19 @@ class ProductController extends Controller
 
         return redirect()->back()->with('success', 'Product deleted successfully');
     }
+
+    /**
+     * update the product status
+     */
+    public function updateStatus(Product $product, Request $request)
+    {
+        $product->update([
+            'status' => $request->validate([
+                'status' => 'required|in:active,inactive'
+            ])['status']
+        ]);
+
+        return response()->json(['status' => $product->status]);
+    }
+
 }

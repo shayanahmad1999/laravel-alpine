@@ -69,7 +69,34 @@
                         <td class="px-4 py-2">{{ $product->name }}</td>
                         <td class="px-4 py-2">{{ $product->sku }}</td>
                         <td class="px-4 py-2">{{ number_format($product->price) }}</td>
-                        <td class="px-4 py-2 capitalize">{{ $product->status }}</td>
+                        <td 
+                            x-data="{ status: '{{ $product->status }}' }" 
+                            class="px-4 py-2"
+                            >
+                            <button 
+                                @click="
+                                fetch('/products/{{ $product->id }}/status', {
+                                    method: 'PUT',
+                                    headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                    },
+                                    body: JSON.stringify({ 
+                                    status: (status === 'active') ? 'inactive' : 'active' 
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => status = data.status);
+                                "
+                                :class="{
+                                    'bg-green-500': status === 'active',
+                                    'bg-red-500': status === 'inactive'
+                                }"
+                                class="text-white px-3 py-1 rounded"
+                            >
+                                <span class="uppercase" x-text="status"></span>
+                            </button>
+                        </td>
                         <td class="px-4 py-2">
                             @if ($product->productImages->count())
                                 <img src="{{ asset('storage/' . $product->productImages[0]->featured_image) }}" alt="image" class="w-30 h-18 object-cover rounded">
