@@ -26,13 +26,30 @@
         </div>
     @endif
 
-
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Product List</h1>
 
         <button @click="openModal('create')" class="flex items-center cursor-pointer bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
             <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>Add Product
         </button>
+    </div>
+
+    <div class="flex items-center mb-4 gap-3">
+        <form method="GET" action="{{ route('products.index') }}" class="flex space-x-4 mb-4 w-full">
+            <select name="sku" class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5">
+                <option value="">SELECT SKU</option>
+                @foreach ($skus as $sku)
+                    <option value="{{ $sku }}" @if(request('sku') == $sku) selected @endif>{{ $sku }}</option>
+                @endforeach
+            </select>
+
+            <input type="text" name="name" value="{{ request('name') }}" placeholder="Search by Name..." class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5" />
+
+            <input type="number" step="0.01" name="price" value="{{ request('price') }}" placeholder="Search by Price..." class="w-1/4 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2.5" />
+
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Search</button>
+            <a href={{ route('products.index') }} class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded">Reset</a>
+        </form>
     </div>
     
     <div class="bg-white shadow-md rounded overflow-x-auto">
@@ -67,6 +84,7 @@
             </tbody>
         </table>
     </div>
+    <div class="mt-3 py-3">{{$products->links()}}</div>
     @include('products.partials.product-modal')
 
     @if ($errors->any())

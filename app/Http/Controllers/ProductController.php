@@ -14,10 +14,27 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(): View 
+    public function index(Request $request): View 
     {
-        $products = Product::with('productImages')->latest()->paginate(5);
-        return view("products.index", compact("products"));
+        $skus = Product::pluck('sku')->unique();
+
+        $query = Product::with('productImages');
+
+        if ($request->filled('name')) {
+            $query->where('name', 'LIKE', '%' . $request->name . '%');
+        }
+
+        if ($request->filled('price')) {
+            $query->where('price', 'LIKE', '%' . $request->price . '%');
+        }
+
+        if ($request->filled('sku')) {
+            $query->where('sku', 'LIKE', '%' . $request->sku . '%');
+        }
+
+        $products = $query->latest()->paginate(5);
+
+        return view("products.index", compact("products", "skus"));
     }
 
     /**
