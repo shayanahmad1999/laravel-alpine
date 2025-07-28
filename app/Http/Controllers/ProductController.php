@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -36,6 +38,38 @@ class ProductController extends Controller
             'images' => 'required|array', 
             'images.*' => 'image|max:5120', 
         ]);
+
+        $product = Product::create([
+            'name'=> $request->name,
+            'slug' => Str::slug($request->name),
+            'description'=> $request->description,
+            'price'=> $request->price,
+            'sku' => $this->generateSku(),
+            'status'=> $request->status,
+        ]);
+
+        if($request->hasFile('images')){
+            foreach($request->file('images') as $image) {
+                $path = $image->store('products', 'public');
+                $product->productImages()->create([
+                    'featured_image' => $path
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success',  'Product saved successfuly');
+    }
+
+    /**
+     * Generate SKU
+     */
+
+    private function generateSku(){
+        do {
+            $sku = 'SKU-'.strtoupper(Str::random(8));
+        } while (Product::where('sku', $sku)->exists());
+
+        return $sku;
     }
 
     /**
