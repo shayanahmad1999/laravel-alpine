@@ -11,7 +11,7 @@
 
         <div class="mb-5">
             <label for="name" class="block mb-2 text-sm font-medium">NAME</label>
-            <input x-model="form.name" value="{{ old('name') }}" :disabled="isView" type="text" id="name" class="w-full shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Watch..." />
+            <input x-model="form.name" name="name" value="{{ old('name') }}" :disabled="isView" type="text" id="name" class="w-full shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5" placeholder="Watch..." />
             @error('name')
                 <p class="text-red-500 text-sm">{{$message}}</p>
             @enderror
@@ -19,14 +19,14 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             <div class="mb-5">
                 <label for="price" class="block mb-2 text-sm font-medium">PRICE</label>
-                <input x-model="form.price" value="{{ old('price') }}" :disabled="isView" type="number" id="price" step="0.1" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="10.00" />
+                <input x-model="form.price" name="price" value="{{ old('price') }}" :disabled="isView" type="number" id="price" step="0.1" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="10.00" />
                 @error('price')
                     <p class="text-red-500 text-sm">{{$message}}</p>
                 @enderror
             </div>
             <div class="mb-5">
                 <label for="status" class="block mb-2 text-sm font-medium text-gray-900">STATUS</label>
-                <select x-model="form.status" :disabled="isView" id="status" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                <select x-model="form.status" :disabled="isView" name="status" id="status" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                     <option>SELECT STATUS</option>
                     <option value="active" {{ old('status') === 'active' ? 'selected' : '' }}>ACTIVE</option>
                     <option value="inactive" {{ old('status') === 'inactive' ? 'selected' : '' }}>IN-ACTIVE</option>
@@ -38,7 +38,7 @@
         </div>
         <div class="mb-5">
             <label for="description" class="block mb-2 text-sm font-medium">DESCRIPTION</label>
-            <textarea x-model="form.description" :disabled="isView" id="description" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Description...">{{ old(key: 'description') }}</textarea>
+            <textarea x-model="form.description" :disabled="isView" name="description" id="description" class="shadow-xs bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Description...">{{ old(key: 'description') }}</textarea>
             @error('description')
                 <p class="text-red-500 text-sm">{{$message}}</p>
             @enderror
@@ -75,9 +75,12 @@
             </template>
         </div>
 
-        <template x-if="img.type === 'existing'">
-            <input type="hidden" name="existing_images[]" :value="img.path">
+        <template x-for="img in imagePreviews" :key="img.path">
+            <template x-if="img.type === 'existing'">
+                <input type="hidden" name="existing_images[]" :value="img.path">
+            </template>
         </template>
+
 
         <div class="flex justify-end space-x-3 pt-4">
             <button @click="closeModal" type="button" class="cursor-pointer bg-gray-300 hover:bg-gray-700 text-black px-6 py-2 rounded shadow hover:text-white">Cancel</button>
