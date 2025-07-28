@@ -38,11 +38,17 @@ npm run build
 # 5. Generate application key
 php artisan key:generate
 
-# 6.a. run the project
+# 6. Storage link
+php artisan storage:link
+
+# 7.a. run the project
 php artisan serve
 npm run dev
 
-# 6.b. run the project
+# 7.b. run the project
 composer run dev
+
+# 8. redirect to product page
+http://localhost:8000/products
 
 ```
