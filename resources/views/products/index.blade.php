@@ -2,11 +2,11 @@
  @section('title', content: 'Products')
 @section('content')
 
-<div class="py-4">
+<div x-data="productManager()" class="py-4">
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Product List</h1>
 
-        <button class="flex items-center cursor-pointer bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
+        <button @click="openModal('create')" class="flex items-center cursor-pointer bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded">
             <i data-lucide="plus-circle" class="h-4 w-4 mr-1"></i>Add Product
         </button>
     </div>
@@ -51,7 +51,88 @@
             </tbody>
         </table>
     </div>
-
+    @include('products.partials.product-modal')
 </div>
 
 @endsection
+
+@push('scripts')
+    <script>
+        function productManager(){
+            return {
+                isModalOpen: false,
+                mode: 'create',
+                modalTitle: 'Create Product',
+                form: productManager.defaultForm(),
+                imagePreviews: [],
+                errors: [],
+
+                openModal(type) {
+                    this.isModalOpen = true;
+                },
+
+                closeModal(){
+                    this.isModalOpen = false;
+                },
+
+                handleImage(event) {
+                    const files = Array.from(event.target.files);
+                    this.processFilesHandling(files);
+                },
+
+                handleDrop(event) {                    
+                    const files = Array.from(event.dataTransfer.files);
+                    this.processFilesHandling(files);
+
+                    const dataTransfer = new DataTransfer();
+                    files.forEach(file => dataTransfer.items.add(file));
+                    this.$refs.fileInput.files = dataTransfer.files;
+                },
+
+                processFilesHandling(files) {
+                    files.forEach(file => {
+                        if(file.type.startsWith('image')) {
+                            this.form.images.push(file)
+                            this.imagePreviews.push({
+                                url: URL.createObjectURL(file),
+                                type: 'new',
+                                file
+                            });
+                        } else {
+                            this.errors.push(`${file.name} is not valid image file.`)
+                        }
+                    })
+                },
+                removeImage(index) {
+                    const image = this.imagePreviews[index];
+                    if (image.type === 'existing') {
+                        this.form.existingImages = this.form.existingImages.filter(
+                            path => path !== image.featured_image
+                        );
+                    } else if (image.type === 'new') {
+                        const findIndex = this.form.images.findIndex(
+                            file => URL.createObjectURL(file) === image.url
+                        );
+                        if (findIndex !== -1) {
+                            this.form.images.splice(findIndex, 1);
+                        }
+                    }
+
+                    URL.revokeObjectURL(image.url);
+                    this.imagePreviews.splice(index, 1);
+                }
+            };
+        }
+
+        productManager.defaultForm = function() {
+            return {
+                name: '',
+                price: '',
+                status: '',
+                description: '',
+                images: [],
+                existingImages: []
+            }
+        }
+    </script>
+@endpush
