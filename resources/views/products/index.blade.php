@@ -3,6 +3,17 @@
 @section('content')
 
 <div x-data="productManager()" x-init="init()" class="py-4">
+
+    @if (session('success'))
+        <div x-data="{show: true}" x-init="setTimeOut(() => show = false, 4000)" x-show="show" transition class="bg-green-200 text-green-900 px-3 border border-green-400 py-2 rounded-mb-4">
+            {{ session('success') }}
+        </div>
+    @elseif (session('error'))
+        <div x-data="{show: true}" x-init="setTimeOut(() => show = false, 4000)" x-show="show" transition class="bg-red-200 text-red-900 px-3 border border-red-400 py-2 rounded-mb-4">
+            {{ session('success') }}
+        </div>
+    @endif
+
     <div class="flex justify-between items-center mb-4">
         <h1 class="text-2xl font-bold">Product List</h1>
 
@@ -52,15 +63,20 @@
                             @endif
                         </td>
                         <td class="px-4 py-2 space-x-2">
-                            <button title="View" class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition">
+                            <button @click="openModal('view', {{ $product }})" title="View" class="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white p-2 rounded transition">
                                 <i data-lucide="eye" class="w-4 h-4"></i>
                             </button>
-                            <button title="View" class="cursor-pointer bg-green-500 hover:bg-green-600 text-white p-2 rounded transition">
+                            <button @click="openModal('edit', {{ $product }})" title="Edit" class="cursor-pointer bg-green-500 hover:bg-green-600 text-white p-2 rounded transition">
                                 <i data-lucide="pencil" class="w-4 h-4"></i>
                             </button>
-                            <button title="View" class="cursor-pointer bg-red-500 hover:bg-red-600 text-white p-2 rounded transition">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
+                            <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block"
+                                onsubmit="return confirm('are you sure want to delete this product?')" >
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" title="Delete" class="cursor-pointer bg-red-500 hover:bg-red-600 text-white p-2 rounded transition">
+                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                </button>
+                            </form>
                         </td>
                     </tr>
                 @empty
@@ -96,17 +112,40 @@
                 form: productManager.defaultForm(),
                 imagePreviews: [],
                 errors: [],
+                isView: false,
 
                 init() {
                     if (Alpine.store('productStore')?.isModalOpen) {
-                        this.mode = 'create';
-                        this.modalTitle = 'Create Product';
-                        this.openModal();
+                        this.openModal('create');
                         Alpine.store('productStore').isModalOpen = false;
                     }
                 },
 
-                openModal(type) {
+                openModal(type, product = null) {
+                    this.mode = type;
+                    this.isView = type === 'view'
+                    this.modalTitle = this.isView ? 'Product Details' : (type === 'edit' ? 'Update Product' : 'Create Product');
+                    this.errors = [];
+                    this.form = productManager.defaultForm();
+
+                    if(product) {
+                        Object.assign(this.form, {
+                            id: product.id,
+                            name: product.name,
+                            price: product.price,
+                            status: product.status,
+                            description: product.description,
+                            existingImages: product.product_images.map(img => img.featured_image)
+                        });
+                        this.imagePreviews = product.product_images.map(img => ({
+                            url: `/storage/${img.featured_image}`,
+                            type: 'existing',
+                            path: img.featured_image
+                        }));
+                    } else {
+                        this.imagePreviews = [];
+                    }
+
                     this.isModalOpen = true;
                 },
 
