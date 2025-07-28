@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\View\View;
 use Illuminate\Support\Str;
 
@@ -91,9 +92,41 @@ class ProductController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Product $product)
     {
-        //
+        $existingImages = $request->input('existing_images', []);
+        $hasExistingImages = count($existingImages) > 0;
+        $hasnNewImages = $request->hasFile('images');
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'price' => 'required|numeric',
+            'status' => 'required|in:active,inactive',
+            'description' => 'required|string', 
+            'images' => [$hasExistingImages || $hasnNewImages ? 'nullable' : 'required', 'array'], 
+            'images.*' => 'image|max:5120', 
+        ]);
+
+        $product->update($request->only([
+            'name','price','status','description',
+        ]));
+
+        $product->productImages()->whereNotIn('featured_image', $existingImages)->get()
+        ->each(function($image){
+            Storage::disk('public')->delete($image->featured_image);
+            $image->delete();
+        });
+
+        if($hasnNewImages){
+            foreach($request->file('images') as $image) {
+                $path = $image->store('products', 'public');
+                $product->productImages()->create([
+                    'featured_image' => $path
+                ]);
+            }
+        }
+
+        return redirect()->back()->with('success',  'Product updated successfuly');
     }
 
     /**
